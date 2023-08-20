@@ -2,10 +2,11 @@
   "name": "tradingbot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "functions/api.js",
   "scripts": {
-    "build": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node functions/api.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "netlify-dev"
   },
   "author": "",
   "license": "ISC",
@@ -16,7 +17,6 @@
     "axios": "^1.4.0",
     "emailjs": "^4.0.2",
     "express": "^4.18.2",
-    "netlify-cli": "^15.10.0",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.4",
     "nodemon": "^3.0.1",
@@ -25,5 +25,8 @@
     "ta.js": "^1.16.3",
     "technicalindicators": "^3.1.0",
     "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^3.10.0"
   }
 }
