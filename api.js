@@ -74,5 +74,4 @@ const getTicksHistory = async () => {
             console.log("lowerfractal")
         }
     }
-    console.log(fractals[47][1])
 };
