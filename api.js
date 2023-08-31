@@ -3,7 +3,20 @@ const DerivAPIBasic = require('@deriv/deriv-api/dist/DerivAPIBasic');
 const connection = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=36807');
 const ta = require('ta.js')
 const express = require('express')
+const axios = require('axios')
 const path = require("path")
+
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'christariccykid55@gmail.com',
+    pass: 'gasuwkwlhibgzqpz'
+  }
+});
+
+
 
 const PORT = 3000;
 
@@ -20,8 +33,11 @@ app.get('/', async(req, res) => {
   res.send('Hello, this is a simple Express server!');
 });
 
+let interval
+
 const server = app.listen(PORT, () => {
-  setInterval(()=> getTicksHistory(), 1000)
+  getTicksHistory()
+  interval = setInterval(()=> getTicksHistory(), 90000)
   console.log(`Server is running on port ${PORT}`);
 });
 
@@ -48,6 +64,7 @@ function getTicksRequest(symbol, count){
 
 const symbol = 'R_75'
 const getTicksHistory = async () => {
+    const date = new Date()
     const period_21 = getTicksRequest(symbol, 21)
     const period_50 = getTicksRequest(symbol, 50)
     const candles_21 = await api.ticksHistory(period_21);
@@ -67,11 +84,39 @@ const getTicksHistory = async () => {
     const fractals = ta.fractals(data)
     if (isUptrend){
         if (fractals[47][0] == true){
-            console.log("upperfractal")
+            const mailOptions = {
+                from: 'christariccykid55@gmail.com',
+                to: 'meliodasdemonk8ng@gmail.com',
+                subject: `Upper Fractal formed at ${data[47][0]}`,
+                text: 'Trading Signal'
+            };
+              
+            transporter.sendMail(mailOptions, function(error, info){
+              if (error) {
+             console.log(error);
+              } else {
+                console.log('Email sent: ' + info.response);
+                // do something useful
+              }
+            });
         }
     } else {
         if (fractals[47][1] == true){
-            console.log("lowerfractal")
+            const mailOptions = {
+                from: 'christariccykid55@gmail.com',
+                to: 'meliodasdemonk8ng@gmail.com',
+                subject: `Lower Fractal formed at ${data[47][1]}`,
+                text: 'Trading Signal'
+            };
+              
+            transporter.sendMail(mailOptions, function(error, info){
+              if (error) {
+                console.log(error);
+              } else {
+                console.log('Email sent: ' + info.response);
+                // do something useful
+              }
+            });
         }
     }
 };
