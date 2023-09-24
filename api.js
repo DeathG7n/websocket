@@ -82,41 +82,39 @@ const getTicksHistory = async () => {
         data.push([highPrices[i], lowPrices[i]])
     }
     const fractals = ta.fractals(data)
-    if (isUptrend){
-        if (fractals[47][0] == true){
-            const mailOptions = {
-                from: 'christariccykid55@gmail.com',
-                to: 'meliodasdemonk8ng@gmail.com',
-                subject: `Upper Fractal formed at ${data[47][0]}`,
-                text: 'Trading Signal'
-            };
+    // if (isUptrend){
+    //     if (fractals[47][0] == true){
+    //         const mailOptions = {
+    //             from: 'christariccykid55@gmail.com',
+    //             to: 'meliodasdemonk8ng@gmail.com',
+    //             subject: `Upper Fractal formed at ${data[47][0]}`,
+    //             text: 'Trading Signal'
+    //         };
               
-            transporter.sendMail(mailOptions, function(error, info){
-              if (error) {
-             console.log(error);
-              } else {
-                console.log('Email sent: ' + info.response);
-                // do something useful
-              }
-            });
-        }
-    } else {
-        if (fractals[47][1] == true){
-            const mailOptions = {
-                from: 'christariccykid55@gmail.com',
-                to: 'meliodasdemonk8ng@gmail.com',
-                subject: `Lower Fractal formed at ${data[47][1]}`,
-                text: 'Trading Signal'
-            };
+    //         transporter.sendMail(mailOptions, function(error, info){
+    //           if (error) {
+    //          console.log(error);
+    //           } else {
+    //             console.log('Email sent: ' + info.response);
+    //           }
+    //         });
+    //     }
+    // } else {
+    //     if (fractals[47][1] == true){
+    //         const mailOptions = {
+    //             from: 'christariccykid55@gmail.com',
+    //             to: 'meliodasdemonk8ng@gmail.com',
+    //             subject: `Lower Fractal formed at ${data[47][1]}`,
+    //             text: 'Trading Signal'
+    //         };
               
-            transporter.sendMail(mailOptions, function(error, info){
-              if (error) {
-                console.log(error);
-              } else {
-                console.log('Email sent: ' + info.response);
-                // do something useful
-              }
-            });
-        }
-    }
+    //         transporter.sendMail(mailOptions, function(error, info){
+    //           if (error) {
+    //             console.log(error);
+    //           } else {
+    //             console.log('Email sent: ' + info.response);
+    //           }
+    //         });
+    //     }
+    // }
 };
