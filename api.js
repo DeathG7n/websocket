@@ -49,7 +49,7 @@ function getTicksRequest(symbol, count){
         count: count,
         end: 'latest',
         style: 'candles',
-        granularity: 60,
+        granularity: 300,
     };
     return ticks_history_request
 }
