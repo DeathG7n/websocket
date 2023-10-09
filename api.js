@@ -24,7 +24,7 @@ let interval
 const PORT = 3000;
 const server = app.listen(PORT, () => {
   getTicksHistory()
-  interval = setInterval(()=> getTicksHistory(), 1000)
+  interval = setInterval(()=> getTicksHistory(), 60000)
   console.log(`Server is running on port ${PORT}`);
 });
 
@@ -34,14 +34,15 @@ const io = require("socket.io")(server, {
     }
 })
 
-io.on("connection", (socket) =>{
-  console.log("connected to socket.io")
-})
-
 let breakOfStructure = 0
 let changeOfCharacter = 0
 let sendTime = 0
 let send = true
+let timeframe = 3600
+
+io.on("connection", (socket) =>{
+  console.log("connected to socket.io")
+})
 
 function getTicksRequest(symbol, count){
     const ticks_history_request = {
@@ -49,7 +50,7 @@ function getTicksRequest(symbol, count){
         count: count,
         end: 'latest',
         style: 'candles',
-        granularity: 300,
+        granularity: timeframe,
     };
     return ticks_history_request
 }
@@ -96,120 +97,65 @@ const getTicksHistory = async () => {
         lowerFractals?.push([data[i][0]])
       }
     }
+    io.emit("ASK", closePrices21[20])
+    
     if(send == true){
       if(isUptrend){
         if(breakOfStructure == 0){
-          breakOfStructure = upperFractals[upperFractals.length - 1]
+          breakOfStructure = Math.max(upperFractals)
         }
         if(changeOfCharacter == 0){
-          changeOfCharacter = lowerFractals[lowerFractals.length - 1]
+          changeOfCharacter = Math.max(lowerFractals)
         }
-        if(fractals[47][0] == true && data[47][0] > upperFractals[upperFractals?.length - 2] ){
+        if(fractals[47][0] == true && data[47][0] > breakOfStructure ){
           breakOfStructure = data[47][0]
         }
-        if(fractals[47][1] == true && data[47][1] > lowerFractals[lowerFractals?.length - 2]){
+        if(fractals[47][1] == true && data[47][1] > changeOfCharacter){
           changeOfCharacter = data[47][1]
         }
         if(closePrices21[20] > breakOfStructure && openPrices21[20] < breakOfStructure){
           sendTime = date.getMinutes()
           console.log("BOS")
-          const mailOptions = {
-            from: 'christariccykid55@gmail.com',
-            to: 'meliodasdemonk8ng@gmail.com',
-            subject: `Break of Structure at ${breakOfStructure}`,
-            text: 'Trading Signal'
-          };
-                      
-          transporter.sendMail(mailOptions, function(error, info){
-          if (error) {
-            console.log(error);
-          } else {
-              console.log('Email sent: ' + info.response);
-            }
-          });
           io.on("connection", (socket) =>{
-            io.emit("BOS", "Break Of Structure in Uptrend")
+            socket.emit("BOS", "Break Of Structure in Uptrend")
           }) 
         }
         if(closePrices21[20] < changeOfCharacter && openPrices21[20] > changeOfCharacter){
           sendTime = date.getMinutes()
           console.log("CHOCH")
-          const mailOptions = {
-            from: 'christariccykid55@gmail.com',
-            to: 'meliodasdemonk8ng@gmail.com',
-            subject: `Change of Character at ${changeOfCharacter}`,
-            text: 'Trading Signal'
-          };
-                      
-          transporter.sendMail(mailOptions, function(error, info){
-          if (error) {
-            console.log(error);
-          } else {
-              console.log('Email sent: ' + info.response);
-            }
-          });
           io.on("connection", (socket) =>{
-            io.emit("CHOCH", "Change of Character in Uptrend")
+            socket.emit("CHOCH", "Change of Character in Uptrend")
           }) 
         }
       } else{
         if(breakOfStructure == 0){
-          breakOfStructure = lowerFractals[lowerFractals.length - 1]
+          breakOfStructure = Math.min(lowerFractals)
         }
         if(changeOfCharacter == 0){
-          changeOfCharacter = upperFractals[upperFractals.length - 1]
+          changeOfCharacter = Math.min(upperFractals)
         }
-        if(fractals[47][0] == true && data[47][0] < upperFractals[upperFractals?.length - 2] ){
+        if(fractals[47][0] == true && data[47][0] < changeOfCharacter ){
           changeOfCharacter = data[47][0]
         }
-        if(fractals[47][1] == true && data[47][1] < lowerFractals[lowerFractals?.length - 2]){
+        if(fractals[47][1] == true && data[47][1] < breakOfStructure){
           breakOfStructure = data[47][0]
         }
         if(closePrices21[20] < breakOfStructure && openPrices21[20] > breakOfStructure){
           sendTime = date.getMinutes()
           console.log("BOS")
-          const mailOptions = {
-            from: 'christariccykid55@gmail.com',
-            to: 'meliodasdemonk8ng@gmail.com',
-            subject: `Break of Structure at ${breakOfStructure}`,
-            text: 'Trading Signal'
-          };
-                      
-          transporter.sendMail(mailOptions, function(error, info){
-          if (error) {
-            console.log(error);
-          } else {
-              console.log('Email sent: ' + info.response);
-            }
-          });
           io.on("connection", (socket) =>{
-            io.emit("BOS", "Break Of Structure in Downtrend")
+            socket.emit("BOS", "Break Of Structure in Downtrend")
           }) 
         }
         if(closePrices21[20] > changeOfCharacter && openPrices21[20] < changeOfCharacter){
           sendTime = date.getMinutes()
           console.log("CHOCH")
-          const mailOptions = {
-            from: 'christariccykid55@gmail.com',
-            to: 'meliodasdemonk8ng@gmail.com',
-            subject: `Change of Character at ${changeOfCharacter}`,
-            text: 'Trading Signal'
-          };
-                      
-          transporter.sendMail(mailOptions, function(error, info){
-          if (error) {
-            console.log(error);
-          } else {
-              console.log('Email sent: ' + info.response);
-            }
-          });
           io.on("connection", (socket) =>{
-            io.emit("CHOCH", "Change of Character in Downtrend")
+            socket.emit("CHOCH", "Change of Character in Downtrend")
           }) 
         }
       }
     }
-   console.log(send)
   } catch (error){
       console.log(error)
   }
