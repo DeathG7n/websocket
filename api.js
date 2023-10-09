@@ -116,16 +116,12 @@ const getTicksHistory = async () => {
         if(closePrices21[20] > breakOfStructure && openPrices21[20] < breakOfStructure){
           sendTime = date.getMinutes()
           console.log("BOS")
-          io.on("connection", (socket) =>{
-            socket.emit("BOS", "Break Of Structure in Uptrend")
-          }) 
+          io.emit("BOS", "Break Of Structure in Uptrend")
         }
         if(closePrices21[20] < changeOfCharacter && openPrices21[20] > changeOfCharacter){
           sendTime = date.getMinutes()
           console.log("CHOCH")
-          io.on("connection", (socket) =>{
-            socket.emit("CHOCH", "Change of Character in Uptrend")
-          }) 
+          io.emit("CHOCH", "Change of Character in Uptrend")
         }
       } else{
         if(breakOfStructure == 0){
@@ -143,20 +139,16 @@ const getTicksHistory = async () => {
         if(closePrices21[20] < breakOfStructure && openPrices21[20] > breakOfStructure){
           sendTime = date.getMinutes()
           console.log("BOS")
-          io.on("connection", (socket) =>{
-            socket.emit("BOS", "Break Of Structure in Downtrend")
-          }) 
+          io.emit("BOS", "Break Of Structure in Uptrend") 
         }
         if(closePrices21[20] > changeOfCharacter && openPrices21[20] < changeOfCharacter){
           sendTime = date.getMinutes()
           console.log("CHOCH")
-          io.on("connection", (socket) =>{
-            socket.emit("CHOCH", "Change of Character in Downtrend")
-          }) 
+          io.emit("CHOCH", "Change of Character in Uptrend")
         }
       }
     }
   } catch (error){
-      console.log(error)
+    console.log(error)
   }
 };
