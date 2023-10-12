@@ -42,6 +42,7 @@ let timeframe = 3600
 
 io.on("connection", (socket) =>{
   console.log("connected to socket.io")
+  interval = setInterval(()=> getTicksHistory(), 1000)
 })
 
 function getTicksRequest(symbol, count){
@@ -101,7 +102,7 @@ const getTicksHistory = async () => {
     
     if(send == true){
       if(isUptrend){
-        if(closePrices21[20] > openPrices21[20] && openPrices21[19] > closePrices21[19] && openPrices21[18] > closePrices21[18] && openPrices21[17] > closePrices21[17]){
+        if(closePrices21[20] > openPrices21[20] && openPrices21[19] > closePrices21[19]){
           io.emit("Bull", true)
         } else{
           io.emit("Bull", false)
@@ -133,7 +134,7 @@ const getTicksHistory = async () => {
           io.emit("CHOCH", false)
         }
       } else{
-        if(openPrices21[20] > closePrices21[20] && closePrices21[19] > openPrices21[19] && closePrices21[18] > openPrices21[18] && closePrices21[17] > openPrices21[17]){
+        if(openPrices21[20] > closePrices21[20] && closePrices21[19] > openPrices21[19]){
           io.emit("Bear", true)
         } else{
           io.emit("Bear", false)
