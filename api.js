@@ -24,7 +24,7 @@ let interval
 const PORT = 3000;
 const server = app.listen(PORT, () => {
   getTicksHistory()
-  interval = setInterval(()=> getTicksHistory(), 60000)
+  interval = setInterval(()=> getTicksHistory(), 1000)
   console.log(`Server is running on port ${PORT}`);
 });
 
@@ -45,14 +45,14 @@ io.on("connection", (socket) =>{
 })
 
 function getTicksRequest(symbol, count){
-    const ticks_history_request = {
-        ticks_history: symbol,
-        count: count,
-        end: 'latest',
-        style: 'candles',
-        granularity: timeframe,
-    };
-    return ticks_history_request
+  const ticks_history_request = {
+    ticks_history: symbol,
+    count: count,
+    end: 'latest',
+    style: 'candles',
+    granularity: timeframe,
+  };
+  return ticks_history_request
 }
 const symbol = 'R_75'
 
@@ -101,6 +101,11 @@ const getTicksHistory = async () => {
     
     if(send == true){
       if(isUptrend){
+        if(closePrices21[20] > openPrices21[20] && openPrices21[19] > closePrices21[19] && openPrices21[18] > closePrices21[18] && openPrices21[17] > closePrices21[17]){
+          io.emit("Bull", true)
+        } else{
+          io.emit("Bull", false)
+        }
         if(breakOfStructure == 0){
           breakOfStructure = Math.max(upperFractals)
         }
@@ -116,14 +121,23 @@ const getTicksHistory = async () => {
         if(closePrices21[20] > breakOfStructure && openPrices21[20] < breakOfStructure){
           sendTime = date.getMinutes()
           console.log("BOS")
-          io.emit("BOS", "Break Of Structure in Uptrend")
+          io.emit("BOS", true)
+        } else{
+          io.emit("BOS", false)
         }
         if(closePrices21[20] < changeOfCharacter && openPrices21[20] > changeOfCharacter){
           sendTime = date.getMinutes()
           console.log("CHOCH")
-          io.emit("CHOCH", "Change of Character in Uptrend")
+          io.emit("CHOCH", true)
+        } else{
+          io.emit("CHOCH", false)
         }
       } else{
+        if(openPrices21[20] > closePrices21[20] && closePrices21[19] > openPrices21[19] && closePrices21[18] > openPrices21[18] && closePrices21[17] > openPrices21[17]){
+          io.emit("Bear", true)
+        } else{
+          io.emit("Bear", false)
+        }
         if(breakOfStructure == 0){
           breakOfStructure = Math.min(lowerFractals)
         }
@@ -139,12 +153,16 @@ const getTicksHistory = async () => {
         if(closePrices21[20] < breakOfStructure && openPrices21[20] > breakOfStructure){
           sendTime = date.getMinutes()
           console.log("BOS")
-          io.emit("BOS", "Break Of Structure in Uptrend") 
+          io.emit("BOS", true) 
+        } else{
+          io.emit("BOS", false)
         }
         if(closePrices21[20] > changeOfCharacter && openPrices21[20] < changeOfCharacter){
           sendTime = date.getMinutes()
           console.log("CHOCH")
-          io.emit("CHOCH", "Change of Character in Uptrend")
+          io.emit("CHOCH", true)
+        } else{
+          io.emit("CHOCH", false)
         }
       }
     }
