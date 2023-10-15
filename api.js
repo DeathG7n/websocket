@@ -22,16 +22,15 @@ app.get('/', async(req, res) => {
 
 let interval
 const PORT = 3000;
+
 const server = app.listen(PORT, () => {
-  getTicksHistory()
-  interval = setInterval(()=> getTicksHistory(), 1000)
   console.log(`Server is running on port ${PORT}`);
 });
 
 const io = require("socket.io")(server, {
-    cors:{
-        origin: "*"
-    }
+  cors:{
+    origin: "*"
+  }
 })
 
 let breakOfStructure = 0
@@ -41,8 +40,7 @@ let send = true
 let timeframe = 3600
 
 io.on("connection", (socket) =>{
-  console.log("connected to socket.io")
-  interval = setInterval(()=> getTicksHistory(), 1000)
+  interval = setInterval(()=> getTicksHistory(), 10000)
 })
 
 function getTicksRequest(symbol, count){
@@ -59,6 +57,9 @@ const symbol = 'R_75'
 
 const getTicksHistory = async () => {
   const date = new Date()
+  io.on("disconnect",(socket) =>{
+    console.log("Disconnected")
+  })
   try{
     const period_21 = getTicksRequest(symbol, 21)
     const period_50 = getTicksRequest(symbol, 50)
@@ -99,6 +100,7 @@ const getTicksHistory = async () => {
       }
     }
     io.emit("ASK", closePrices21[20])
+    console.log(date.getSeconds())
     
     if(send == true){
       if(isUptrend){
@@ -121,14 +123,12 @@ const getTicksHistory = async () => {
         }
         if(closePrices21[20] > breakOfStructure && openPrices21[20] < breakOfStructure){
           sendTime = date.getMinutes()
-          console.log("BOS")
           io.emit("BOS", true)
         } else{
           io.emit("BOS", false)
         }
         if(closePrices21[20] < changeOfCharacter && openPrices21[20] > changeOfCharacter){
           sendTime = date.getMinutes()
-          console.log("CHOCH")
           io.emit("CHOCH", true)
         } else{
           io.emit("CHOCH", false)
@@ -153,14 +153,12 @@ const getTicksHistory = async () => {
         }
         if(closePrices21[20] < breakOfStructure && openPrices21[20] > breakOfStructure){
           sendTime = date.getMinutes()
-          console.log("BOS")
           io.emit("BOS", true) 
         } else{
           io.emit("BOS", false)
         }
         if(closePrices21[20] > changeOfCharacter && openPrices21[20] < changeOfCharacter){
           sendTime = date.getMinutes()
-          console.log("CHOCH")
           io.emit("CHOCH", true)
         } else{
           io.emit("CHOCH", false)
@@ -168,6 +166,7 @@ const getTicksHistory = async () => {
       }
     }
   } catch (error){
-    console.log(error)
+    io.emit("error", true)
+    clearInterval(interval)
   }
 };
