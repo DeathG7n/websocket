@@ -168,5 +168,19 @@ const getTicksHistory = async () => {
   } catch (error){
     io.emit("error", true)
     clearInterval(interval)
+    const mailOptions = {
+      from: 'christariccykid55@gmail.com',
+      to: 'meliodasdemonk8ng@gmail.com',
+      subject: error?.error?.message,
+      text: 'Error'
+    };
+
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('Email sent: ' + info.response);
+      }
+    });
   }
 };
