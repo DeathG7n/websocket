@@ -57,9 +57,6 @@ const symbol = 'R_75'
 
 const getTicksHistory = async () => {
   const date = new Date()
-  io.on("disconnect",(socket) =>{
-    console.log("Disconnected")
-  })
   try{
     const period_21 = getTicksRequest(symbol, 21)
     const period_50 = getTicksRequest(symbol, 50)
@@ -100,7 +97,6 @@ const getTicksHistory = async () => {
       }
     }
     io.emit("ASK", closePrices21[20])
-    console.log(date.getSeconds())
     
     if(send == true){
       if(isUptrend){
@@ -171,7 +167,7 @@ const getTicksHistory = async () => {
     const mailOptions = {
       from: 'christariccykid55@gmail.com',
       to: 'meliodasdemonk8ng@gmail.com',
-      subject: error?.error?.message,
+      subject: error?.error?.message + " " + date.now(),
       text: 'Error'
     };
 
