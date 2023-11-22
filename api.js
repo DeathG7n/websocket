@@ -24,24 +24,22 @@ let interval
 const PORT = 3000;
 
 const server = app.listen(PORT, () => {
+  interval = setInterval(()=> getTicksHistory(), 10000)
   console.log(`Server is running on port ${PORT}`);
 });
 
-const io = require("socket.io")(server, {
-  cors:{
-    origin: "*"
+function getTimeFrame(count, time){
+  if(time == "mins"){
+    return count * 60
   }
-})
+  if(time == "hrs"){
+    return count * 3600
+  }
+}
 
-let breakOfStructure = 0
-let changeOfCharacter = 0
 let sendTime = 0
 let send = true
-let timeframe = 3600
-
-io.on("connection", (socket) =>{
-  interval = setInterval(()=> getTicksHistory(), 10000)
-})
+let timeframe = getTimeFrame(4, "hrs")
 
 function getTicksRequest(symbol, count){
   const ticks_history_request = {
@@ -58,125 +56,58 @@ const symbol = 'R_75'
 const getTicksHistory = async () => {
   const date = new Date()
   try{
-    const period_21 = getTicksRequest(symbol, 21)
-    const period_50 = getTicksRequest(symbol, 50)
-    const period_38 = getTicksRequest(symbol, 38)
-    const candles_21 = await api.ticksHistory(period_21);
-    const candles_50 = await api.ticksHistory(period_50);
-    const candles_38 = await api.ticksHistory(period_38);
-    const closePrices21 = candles_21?.candles?.map(i => {return i?.close})
-    const highPrices = candles_50?.candles?.map(i => {return i?.high})
-    const lowPrices = candles_50?.candles?.map(i => {return i?.low})
-    const openPrices21 = candles_21?.candles?.map(i => {return i?.open})
-    const closePrices50 = candles_50?.candles?.map(i => {return i?.close})
-    const closePrices38 = candles_38?.candles?.map(i => {return i?.close})
-    const ma21 = ta.ema(closePrices21, closePrices21.length)
-    const ma38 = ta.ema(closePrices38, closePrices38.length)
-    const ma50 = ta.ema(closePrices50, closePrices50.length)
-    const data = []
-    const isUptrend = closePrices21[20] > ma38 ? true : false
-    for (let i = 0; i < highPrices.length; i++) {
-      data.push([highPrices[i], lowPrices[i]])
-    }
-    if(sendTime == date.getMinutes()){
+    const period = getTicksRequest(symbol, 50)
+    const candles = await api.ticksHistory(period);
+    const closePrices = candles?.candles?.map(i => {return i?.close})
+    const openPrices = candles?.candles?.map(i => {return i?.open})
+    const ema = ta.ema(closePrices, closePrices?.length)
+    let isUptrend = closePrices[49] > ema ? true : false
+    
+    const timePassed = date - sendTime
+    const secondsPassed = timePassed / 1000
+    const minutesPassed = secondsPassed / 60
+    if(minutesPassed < 20){
       send = false
     } else{
       send = true
     }
-    const fractals = ta.fractals(data)
 
-    const upperFractals = []
-    const lowerFractals = []
+    function sendEmail(message){
+      sendTime = new Date()
+        const mailOptions = {
+          from: 'christariccykid55@gmail.com',
+          to: 'meliodasdemonk8ng@gmail.com',
+          subject: message,
+          text: 'Trading Signal'
+        };
 
-    for (let i = 0; i < fractals.length; i++) {
-      if(fractals[i][0]){
-        upperFractals?.push([data[i][0]])
-      }
-      if(fractals[i][1]){
-        lowerFractals?.push([data[i][0]])
-      }
+        transporter.sendMail(mailOptions, function(error, info){
+          if (error) {
+            console.log(error);
+          } else {
+            console.log('Email sent: ' + info.response);
+          }
+        });
     }
-    io.emit("ASK", closePrices21[20])
-    
-    if(send == true){
+
+    if(send){
       if(isUptrend){
-        if(closePrices21[20] > openPrices21[20] && openPrices21[19] > closePrices21[19]){
-          io.emit("Bull", true)
-        } else{
-          io.emit("Bull", false)
+        if(openPrices[48] > closePrices[48] && closePrices[49] - openPrices[49] > 500){
+          sendEmail(`Possible Uptrend Continuation by ${date}`)
         }
-        if(breakOfStructure == 0){
-          breakOfStructure = Math.max(upperFractals)
-        }
-        if(changeOfCharacter == 0){
-          changeOfCharacter = Math.max(lowerFractals)
-        }
-        if(fractals[47][0] == true && data[47][0] > breakOfStructure ){
-          breakOfStructure = data[47][0]
-        }
-        if(fractals[47][1] == true && data[47][1] > changeOfCharacter){
-          changeOfCharacter = data[47][1]
-        }
-        if(closePrices21[20] > breakOfStructure && openPrices21[20] < breakOfStructure){
-          sendTime = date.getMinutes()
-          io.emit("BOS", true)
-        } else{
-          io.emit("BOS", false)
-        }
-        if(closePrices21[20] < changeOfCharacter && openPrices21[20] > changeOfCharacter){
-          sendTime = date.getMinutes()
-          io.emit("CHOCH", true)
-        } else{
-          io.emit("CHOCH", false)
+        if(closePrices[48] > openPrices[48] && openPrices[49] - closePrices[49] > 500){
+          sendEmail(`Possible Trend Retracement by ${date}`)
         }
       } else{
-        if(openPrices21[20] > closePrices21[20] && closePrices21[19] > openPrices21[19]){
-          io.emit("Bear", true)
-        } else{
-          io.emit("Bear", false)
-        }
-        if(breakOfStructure == 0){
-          breakOfStructure = Math.min(lowerFractals)
-        }
-        if(changeOfCharacter == 0){
-          changeOfCharacter = Math.min(upperFractals)
-        }
-        if(fractals[47][0] == true && data[47][0] < changeOfCharacter ){
-          changeOfCharacter = data[47][0]
-        }
-        if(fractals[47][1] == true && data[47][1] < breakOfStructure){
-          breakOfStructure = data[47][0]
-        }
-        if(closePrices21[20] < breakOfStructure && openPrices21[20] > breakOfStructure){
-          sendTime = date.getMinutes()
-          io.emit("BOS", true) 
-        } else{
-          io.emit("BOS", false)
-        }
-        if(closePrices21[20] > changeOfCharacter && openPrices21[20] < changeOfCharacter){
-          sendTime = date.getMinutes()
-          io.emit("CHOCH", true)
-        } else{
-          io.emit("CHOCH", false)
-        }
+          if(closePrices[48] > openPrices[48] && openPrices[49] - closePrices[49] > 500){
+            sendEmail(`Possible Downtrend Continuation by ${date}`)
+          }
+          if(openPrices[48] > closePrices[48] && closePrices[49] - openPrices[49] > 500){
+            sendEmail(`Possible Trend Retracement by ${date}`)
+          }
       }
     }
   } catch (error){
-    io.emit("error", true)
-    clearInterval(interval)
-    const mailOptions = {
-      from: 'christariccykid55@gmail.com',
-      to: 'meliodasdemonk8ng@gmail.com',
-      subject: error?.error?.message + " " + date.now(),
-      text: 'Error'
-    };
-
-    transporter.sendMail(mailOptions, function(error, info){
-      if (error) {
-        console.log(error);
-      } else {
-        console.log('Email sent: ' + info.response);
-      }
-    });
+    console.log(error)
   }
 };
